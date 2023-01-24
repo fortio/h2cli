@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -9,13 +10,12 @@ import (
 	"os"
 
 	"fortio.org/fortio/log"
-
-	"golang.org/x/net/http2"
 )
 
 var (
 	h2     = flag.Bool("h2", true, "use HTTP2")
 	url    = flag.String("url", "https://localhost:8080/debug", "URL to fetch")
+	method = flag.String("method", "GET", "HTTP method to use")
 	caCert = flag.String("cacert", "",
 		"`Path` to a custom CA certificate file instead standard internet/system CAs")
 )
@@ -24,7 +24,7 @@ func main() {
 	flag.Parse()
 	client := &http.Client{}
 	// Create TLS configuration with the certificate of the server
-	tlsConfig := &tls.Config{}
+	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
 
 	if *caCert != "" {
 		ca, err := os.ReadFile(*caCert)
@@ -36,20 +36,22 @@ func main() {
 		tlsConfig.RootCAs = caCertPool
 	}
 
-	// Use the proper transport in the client
-	if *h2 {
-		client.Transport = &http2.Transport{TLSClientConfig: tlsConfig}
-	} else {
-		client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+	client.Transport = &http.Transport{
+		TLSClientConfig:   tlsConfig,
+		ForceAttemptHTTP2: *h2, // could also use &http2.Transport{TLSClientConfig: tlsConfig} but that's not necessary to get h2
 	}
 
 	// Perform the request
-	resp, err := client.Get(*url)
+	req, err := http.NewRequestWithContext(context.Background(), *method, *url, nil)
 	if err != nil {
-		log.Fatalf("Failed get: %v", err)
+		log.Fatalf("Request method %q url %q error: %v", *method, *url, err)
 	}
-	defer resp.Body.Close()
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("Failed %q %q - error: %v", *method, *url, err)
+	}
 	body, err := io.ReadAll(resp.Body)
+	resp.Body.Close()
 	if err != nil {
 		log.Fatalf("Failed reading response body: %v", err)
 	}
