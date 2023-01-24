@@ -9,14 +9,15 @@ go install github.com/fortio/h2cli@latest
 
 ## Running
 
-Options/flags:
+Options/flags (removing logger related irrelevant to this flags):
 ```shell
-$ h2cli -h
 Usage of h2cli:
   -cacert Path
     	Path to a custom CA certificate file instead standard internet/system CAs
   -h2
     	use HTTP2 (default true)
+  -method string
+    	HTTP method to use (default "GET")
   -url string
     	URL to fetch (default "https://localhost:8080/debug")
 ```
