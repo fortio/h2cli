@@ -9,19 +9,20 @@ import (
 	"net/http"
 	"os"
 
-	"fortio.org/fortio/log"
+	"fortio.org/cli"
+	"fortio.org/log"
 )
 
 var (
 	h2     = flag.Bool("h2", true, "use HTTP2")
-	url    = flag.String("url", "https://localhost:8080/debug", "URL to fetch")
+	url    = flag.String("url", "https://debug.fortio.org", "URL to fetch")
 	method = flag.String("method", "GET", "HTTP method to use")
 	caCert = flag.String("cacert", "",
 		"`Path` to a custom CA certificate file instead standard internet/system CAs")
 )
 
 func main() {
-	flag.Parse()
+	cli.Main() // Will have either called cli.ExitFunction or everything is valid
 	client := &http.Client{}
 	// Create TLS configuration with the certificate of the server
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}

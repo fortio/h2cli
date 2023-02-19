@@ -3,11 +3,8 @@ module github.com/fortio/h2cli
 go 1.19
 
 require (
-	fortio.org/fortio v1.39.1
-	golang.org/x/net v0.5.0
+	fortio.org/cli v0.6.2
+	fortio.org/log v1.2.2
 )
 
-require (
-	golang.org/x/exp v0.0.0-20221111204811-129d8d6c17ab // indirect
-	golang.org/x/text v0.6.0 // indirect
-)
+require fortio.org/version v1.0.2 // indirect
