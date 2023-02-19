@@ -41,7 +41,7 @@ func main() {
 		TLSClientConfig:   tlsConfig,
 		ForceAttemptHTTP2: *h2, // could also use &http2.Transport{TLSClientConfig: tlsConfig} but that's not necessary to get h2
 	}
-
+	log.Infof("%s on %s", *method, *url)
 	// Perform the request
 	req, err := http.NewRequestWithContext(context.Background(), *method, *url, nil)
 	if err != nil {
@@ -56,6 +56,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed reading response body: %v", err)
 	}
-	log.Printf("Response code %d, proto %s", resp.StatusCode, resp.Proto)
+	log.Infof("Response code %d, proto %s, size %d", resp.StatusCode, resp.Proto, len(body))
 	os.Stdout.Write(body)
 }

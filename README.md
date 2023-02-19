@@ -33,11 +33,12 @@ flags:
 Standard
 
 ```
-$ h2cli
-12:42:29 Response code 200, proto HTTP/2.0
-Φορτίο version 1.50.1 h1:5FSttAHQsyAsi3dzxDmSByfzDYByrWY/yw53bqOg+Kc= go1.19.6 arm64 linux (in fortio.org/proxy 1.10.0)
-Debug server on a1 up for 15h37m59.1s
-Request from [2600:1700:xxxx]:56253 https TLS_AES_128_GCM_SHA256
+$ go run .
+12:50:58 I GET on https://debug.fortio.org
+12:50:58 I Response code 200, proto HTTP/2.0, size 366
+Φορτίο version 1.50.1 h1:5FSttAHQsyAsi3dzxDmSByfzDYByrWY/yw53bqOg+Kc= go1.19.6 amd64 linux (in fortio.org/proxy 1.10.0)
+Debug server on ol1 up for 15h38m51.4s
+Request from [2600:1700:1151:b24f:41e5:48a:2b96:711d]:56772 https TLS_AES_128_GCM_SHA256
 
 GET / HTTP/2.0
 
@@ -53,7 +54,8 @@ body:
 or
 ```shell
 $ h2cli -url https://httpbin.org/get
-12:57:47 Response code 200, proto HTTP/2.0
+12:52:03 I GET on https://httpbin.org/get
+12:52:04 I Response code 200, proto HTTP/2.0, size 270
 ```
 ```json
 {
