@@ -1,5 +1,5 @@
 # h2cli
-Simple http 2.0 (h2) client in go
+Simple http 2.0 (h2) client in go including h2c (http2 over clear text, not requiring TLS)
 
 
 ## Installation
@@ -33,12 +33,12 @@ flags:
 Standard
 
 ```
-$ go run .
+$ go run . -url https://debug.fortio.org
 12:50:58 I GET on https://debug.fortio.org
 12:50:58 I Response code 200, proto HTTP/2.0, size 366
 Φορτίο version 1.50.1 h1:5FSttAHQsyAsi3dzxDmSByfzDYByrWY/yw53bqOg+Kc= go1.19.6 amd64 linux (in fortio.org/proxy 1.10.0)
 Debug server on ol1 up for 15h38m51.4s
-Request from [2600:1700:1151:b24f:41e5:48a:2b96:711d]:56772 https TLS_AES_128_GCM_SHA256
+Request from [2600:1700:xxx]:56772 https TLS_AES_128_GCM_SHA256
 
 GET / HTTP/2.0
 
@@ -86,6 +86,45 @@ gets (in stderr)
 stdout
 ```
 Φορτίο version dev  go1.19.5 arm64 darwin echo debug server up for 11.8s on K6922C3FGJ - request from [::1]:54370
+
+GET /debug HTTP/2.0
+
+headers:
+
+Host: localhost:8080
+Accept-Encoding: gzip
+User-Agent: Go-http-client/2.0
+
+body:
+```
+
+### H2C examples
+
+h2c against debug.fortio.org is the new default for `go run .`
+```
+% go run .
+15:28:59 I h2c GET on http://debug.fortio.org
+15:29:00 I Response code 200, proto HTTP/2.0, size 334
+Φορτίο version 1.52.0 h1:xHVOXkR3k5V5DvVM7/byfIHff3ia613qunnm+7O0EuQ= go1.19.6 arm64 linux (in fortio.org/proxy 1.11.1)
+Debug server on a1 up for 19h4m25s
+Request from [2600:1700:xxx]:52833
+
+GET / HTTP/2.0
+
+headers:
+
+Host: debug.fortio.org
+Accept-Encoding: gzip
+User-Agent: Go-http-client/2.0
+
+body:
+```
+
+```
+% go run . -url localhost:8080/debug
+15:31:16 I h2c GET on http://localhost:8080/debug
+15:31:16 I Response code 200, proto HTTP/2.0, size 245
+Φορτίο version dev  go1.19.6 arm64 darwin echo debug server up for 26m39.3s on MacBook-Air.local - request from [::1]:53010
 
 GET /debug HTTP/2.0
 
