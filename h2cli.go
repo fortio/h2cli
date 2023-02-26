@@ -1,3 +1,9 @@
+// Copyright 2023 Fortio Authors
+// License: Apache 2.0
+//
+// Feel free to inspire (copy) from this code but linking back to
+// https://github.com/fortio would be appreciated.
+
 package main
 
 import (
@@ -23,6 +29,7 @@ var (
 	method  = flag.String("method", "GET", "HTTP method to use")
 	caCert  = flag.String("cacert", "",
 		"`Path` to a custom CA certificate file instead standard internet/system CAs")
+	stream = flag.Bool("stream", false, "stream stdin to server and back (h2 mode only)")
 )
 
 func main() {
@@ -72,7 +79,11 @@ func main() {
 	}
 	log.Infof("%s%s on %s", h2c, *method, *urlFlag)
 	// Perform the request
-	req, err := http.NewRequestWithContext(context.Background(), *method, *urlFlag, nil)
+	var bodyReader io.Reader
+	if *stream {
+		bodyReader = os.Stdin
+	}
+	req, err := http.NewRequestWithContext(context.Background(), *method, *urlFlag, bodyReader)
 	if err != nil {
 		log.Fatalf("Request method %q url %q error: %v", *method, *urlFlag, err)
 	}
@@ -80,6 +91,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)
 	}
+	if *stream {
+		n, err := io.Copy(os.Stdout, resp.Body)
+		log.Infof("Response code %d, proto %s, size %d", resp.StatusCode, resp.Proto, n)
+		if err != nil {
+			log.Fatalf("Error copying response body: %v", err)
+		}
+		return
+	}
+	// else, traditional read all reply mode
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {

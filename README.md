@@ -136,3 +136,16 @@ User-Agent: Go-http-client/2.0
 
 body:
 ```
+
+### Streaming mode:
+
+First prints foo, then bar after 3 second:
+(assumes fortio server including https://github.com/fortio/fortio/pull/721 ie 1.53+)
+
+```
+(echo "foo"; sleep 3; echo "bar") | go run . -stream -url localhost:8080
+15:53:30 I h2c GET on http://localhost:8080
+foo
+bar
+15:53:33 I Response code 200, proto HTTP/2.0, size 8
+```
