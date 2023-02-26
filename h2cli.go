@@ -6,18 +6,22 @@ import (
 	"crypto/x509"
 	"flag"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 
 	"fortio.org/cli"
 	"fortio.org/log"
+	"golang.org/x/net/http2"
 )
 
 var (
-	h2     = flag.Bool("h2", true, "use HTTP2")
-	url    = flag.String("url", "https://debug.fortio.org", "URL to fetch")
-	method = flag.String("method", "GET", "HTTP method to use")
-	caCert = flag.String("cacert", "",
+	h2      = flag.Bool("h2", true, "use HTTP2")
+	urlFlag = flag.String("url", "http://debug.fortio.org", "URL to fetch")
+	method  = flag.String("method", "GET", "HTTP method to use")
+	caCert  = flag.String("cacert", "",
 		"`Path` to a custom CA certificate file instead standard internet/system CAs")
 )
 
@@ -36,20 +40,45 @@ func main() {
 		caCertPool.AppendCertsFromPEM(ca)
 		tlsConfig.RootCAs = caCertPool
 	}
-
-	client.Transport = &http.Transport{
-		TLSClientConfig:   tlsConfig,
-		ForceAttemptHTTP2: *h2, // could also use &http2.Transport{TLSClientConfig: tlsConfig} but that's not necessary to get h2
+	lu := strings.ToLower(*urlFlag)
+	if !strings.HasPrefix(lu, "https://") && !strings.HasPrefix(lu, "http://") {
+		// be nice and add http:// if missing
+		log.LogVf("Adding http:// to url %q", *urlFlag)
+		*urlFlag = "http://" + *urlFlag
 	}
-	log.Infof("%s on %s", *method, *url)
-	// Perform the request
-	req, err := http.NewRequestWithContext(context.Background(), *method, *url, nil)
+	u, err := url.Parse(*urlFlag)
 	if err != nil {
-		log.Fatalf("Request method %q url %q error: %v", *method, *url, err)
+		log.Fatalf("Failed to parse url %q: %v", *urlFlag, err)
+	}
+	h2c := ""
+	if u.Scheme == "https" || !*h2 {
+		// This will do h2 over tls if the server supports it but not h2c
+		// but with TLS all is good in the standard package, with ForceAttemptHTTP2
+		client.Transport = &http.Transport{
+			TLSClientConfig:   tlsConfig, // only used if url is https
+			ForceAttemptHTTP2: *h2,       // *h2 for h2 over tls
+		}
+	} else {
+		// h2c
+		h2c = "h2c "
+		client.Transport = &http2.Transport{
+			AllowHTTP: true, // to get h2c
+			// Trick to get h2c without TLS:
+			// thanks to https://github.com/thrawn01/h2c-golang-example/blob/master/README.md
+			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
+				return net.Dial(network, addr)
+			},
+		}
+	}
+	log.Infof("%s%s on %s", h2c, *method, *urlFlag)
+	// Perform the request
+	req, err := http.NewRequestWithContext(context.Background(), *method, *urlFlag, nil)
+	if err != nil {
+		log.Fatalf("Request method %q url %q error: %v", *method, *urlFlag, err)
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Failed %q %q - error: %v", *method, *url, err)
+		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)
 	}
 	body, err := io.ReadAll(resp.Body)
 	resp.Body.Close()
