@@ -5,7 +5,7 @@ go 1.19
 require (
 	fortio.org/cli v1.3.2
 	fortio.org/log v1.9.3
-	golang.org/x/net v0.12.0
+	golang.org/x/net v0.13.0
 )
 
 require (
