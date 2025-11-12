@@ -3,8 +3,8 @@ module github.com/fortio/h2cli
 go 1.24.0
 
 require (
-	fortio.org/cli v1.12.2
-	fortio.org/log v1.18.1
+	fortio.org/cli v1.12.3
+	fortio.org/log v1.18.3
 	golang.org/x/net v0.46.0
 )
 
