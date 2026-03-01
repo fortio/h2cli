@@ -88,6 +88,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Request method %q url %q error: %v", *method, *urlFlag, err)
 	}
+	//nolint:gosec // yes we want to fetch the url given as input.
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)
