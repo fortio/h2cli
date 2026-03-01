@@ -7,6 +7,8 @@ Simple http 2.0 (h2) client in go including h2c (http2 over clear text, not requ
 go install github.com/fortio/h2cli@latest
 ```
 
+or see the binary releases.
+
 ## Running
 
 Options/flags:
