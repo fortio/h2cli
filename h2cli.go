@@ -72,8 +72,9 @@ func main() {
 			AllowHTTP: true, // to get h2c
 			// Trick to get h2c without TLS:
 			// thanks to https://github.com/thrawn01/h2c-golang-example/blob/master/README.md
-			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
-				return net.Dial(network, addr)
+			DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
+				var d net.Dialer
+				return d.DialContext(ctx, network, addr)
 			},
 		}
 	}
@@ -92,7 +93,8 @@ func main() {
 		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)
 	}
 	if *stream {
-		n, err := io.Copy(os.Stdout, resp.Body)
+		var n int64
+		n, err = io.Copy(os.Stdout, resp.Body)
 		log.Infof("Response code %d, proto %s, size %d", resp.StatusCode, resp.Proto, n)
 		if err != nil {
 			log.Fatalf("Error copying response body: %v", err)
