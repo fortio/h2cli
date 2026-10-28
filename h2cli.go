@@ -35,7 +35,6 @@ func main() {
 	client := &http.Client{}
 	// Create TLS configuration with the certificate of the server
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
-
 	if *caCert != "" {
 		ca, err := os.ReadFile(*caCert)
 		if err != nil {
@@ -80,7 +79,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Request method %q url %q error: %v", *method, *urlFlag, err)
 	}
-
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)
