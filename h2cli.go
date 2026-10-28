@@ -12,7 +12,6 @@ import (
 	"crypto/x509"
 	"flag"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -20,7 +19,6 @@ import (
 
 	"fortio.org/cli"
 	"fortio.org/log"
-	"golang.org/x/net/http2"
 )
 
 var (
@@ -37,7 +35,6 @@ func main() {
 	client := &http.Client{}
 	// Create TLS configuration with the certificate of the server
 	tlsConfig := &tls.Config{MinVersion: tls.VersionTLS12}
-
 	if *caCert != "" {
 		ca, err := os.ReadFile(*caCert)
 		if err != nil {
@@ -68,15 +65,9 @@ func main() {
 	} else {
 		// h2c
 		h2c = "h2c "
-		client.Transport = &http2.Transport{
-			AllowHTTP: true, // to get h2c
-			// Trick to get h2c without TLS:
-			// thanks to https://github.com/thrawn01/h2c-golang-example/blob/master/README.md
-			DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
-				var d net.Dialer
-				return d.DialContext(ctx, network, addr)
-			},
-		}
+		var p http.Protocols
+		p.SetUnencryptedHTTP2(true) // h2c with prior knowledge, no TLS
+		client.Transport = &http.Transport{Protocols: &p}
 	}
 	log.Infof("%s%s on %s", h2c, *method, *urlFlag)
 	// Perform the request
@@ -88,7 +79,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Request method %q url %q error: %v", *method, *urlFlag, err)
 	}
-	//nolint:gosec // yes we want to fetch the url given as input.
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Failed %q %q - error: %v", *method, *urlFlag, err)

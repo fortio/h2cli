@@ -5,7 +5,6 @@ go 1.25.0
 require (
 	fortio.org/cli v1.12.3
 	fortio.org/log v1.18.3
-	golang.org/x/net v0.58.0
 )
 
 require (
@@ -13,5 +12,4 @@ require (
 	fortio.org/version v1.0.4 // indirect
 	github.com/kortschak/goroutine v1.1.3 // indirect
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20250203165127-fa5273e46196 // indirect
-	golang.org/x/text v0.41.0 // indirect
 )
